@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sincronizando con el Nexo | MOBA</title>
+    <style>
+        :root {
+            --discord-color: #5865F2;
+            --bg-color: #0a0a0c;
+            --accent-color: #00f2ff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            overflow: hidden;
+        }
+
+        .background-glow {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            background: var(--discord-color);
+            filter: blur(150px);
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        .card {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            max-width: 400px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 3px solid rgba(255,255,255,0.1);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        h1 { font-size: 1.5rem; margin-bottom: 10px; letter-spacing: 2px; }
+        p { color: #888; font-size: 0.9rem; line-height: 1.5; }
+        .status { color: var(--accent-color); font-weight: bold; margin-top: 20px; }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="card">
+        <div class="spinner"></div>
+        <h1>VINCULANDO CUENTA</h1>
+        <p>Estamos transmitiendo tus credenciales de Discord hacia el cliente del juego...</p>
+        <div id="status" class="status">Esperando respuesta del Nexo...</div>
+    </div>
+
+    <script>
+        const statusEl = document.getElementById('status');
+
+        async function transmitToGodot() {
+            // 1. Extraer datos de la URL (soporta ?code y #access_token)
+            const urlParams = new URLSearchParams(window.location.search);
+            const hashParams = new URLSearchParams(window.location.hash.substring(1));
+            
+            const authCode = urlParams.get('code') || hashParams.get('access_token');
+
+            if (!authCode) {
+                statusEl.innerText = "Error: No se detectaron credenciales.";
+                statusEl.style.color = "#ff4d4d";
+                return;
+            }
+
+            statusEl.innerText = "Conectando con Godot...";
+
+            // 2. Intentar enviar el código al servidor local de Godot
+            try {
+                // Enviamos el código mediante una petición GET simple al puerto 8080
+                await fetch(`http://localhost:8080/token?code=${authCode}`, {
+                    mode: 'no-cors' // Evita problemas de política de seguridad
+                });
+                
+                statusEl.innerText = "¡Sincronización Exitosa!";
+                statusEl.style.color = "#4dff88";
+                
+                // Opcional: Cerrar la pestaña después de 3 segundos
+                setTimeout(() => { window.close(); }, 3000);
+            } catch (err) {
+                statusEl.innerText = "Error de enlace. ¿Está el juego abierto?";
+                statusEl.style.color = "#ff4d4d";
+            }
+        }
+
+        window.onload = transmitToGodot;
+    </script>
+</body>
+</html>
