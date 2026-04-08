@@ -77,37 +77,30 @@
         const statusEl = document.getElementById('status');
 
         async function transmitToGodot() {
-            // 1. Extraer datos de la URL (soporta ?code y #access_token)
-            const urlParams = new URLSearchParams(window.location.search);
-            const hashParams = new URLSearchParams(window.location.hash.substring(1));
-            
-            const authCode = urlParams.get('code') || hashParams.get('access_token');
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashParams = new URLSearchParams(window.location.hash.substring(1));
+    const authCode = urlParams.get('code') || hashParams.get('access_token');
 
-            if (!authCode) {
-                statusEl.innerText = "Error: No se detectaron credenciales.";
-                statusEl.style.color = "#ff4d4d";
-                return;
-            }
+    if (!authCode) {
+        statusEl.innerText = "Error: Sin credenciales.";
+        return;
+    }
 
-            statusEl.innerText = "Conectando con Godot...";
+    statusEl.innerText = "Sincronizando con el cliente...";
 
-            // 2. Intentar enviar el código al servidor local de Godot
-            try {
-                // Enviamos el código mediante una petición GET simple al puerto 8080
-                await fetch(`http://localhost:8080/token?code=${authCode}`, {
-                    mode: 'no-cors' // Evita problemas de política de seguridad
-                });
-                
-                statusEl.innerText = "¡Sincronización Exitosa!";
-                statusEl.style.color = "#4dff88";
-                
-                // Opcional: Cerrar la pestaña después de 3 segundos
-                setTimeout(() => { window.close(); }, 3000);
-            } catch (err) {
-                statusEl.innerText = "Error de enlace. ¿Está el juego abierto?";
-                statusEl.style.color = "#ff4d4d";
-            }
-        }
+    const img = new Image();
+    img.onload = () => {
+        statusEl.innerText = "¡Sincronización Exitosa!";
+        statusEl.style.color = "#4dff88";
+    };
+    img.onerror = () => {
+
+        statusEl.innerText = "Transmisión enviada al juego.";
+        statusEl.style.color = "#4dff88";
+    };
+    
+    img.src = `http://127.0.0.1:8080/auth?code=${authCode}`;
+}
 
         window.onload = transmitToGodot;
     </script>
